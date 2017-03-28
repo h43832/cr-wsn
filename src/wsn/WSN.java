@@ -17,8 +17,8 @@ import java.nio.*;
 import java.util.regex.Pattern;
 import y.ylib.ylib;
 public class WSN extends javax.swing.JFrame implements GAction{
-  public static String version="2.17.0009";
-  public String newversion=version,versionDate="2017-03-26 21:00:00",gpw="nullgpw";
+  public static String version="2.17.0010";
+  public String newversion=version,versionDate="2017-03-28 08:00:00",gpw="nullgpw";
   public Weber w;
   public Net gs;
   ResourceBundle bundle2;
@@ -430,6 +430,8 @@ public void makeDataDir(){
     jMenu3 = new javax.swing.JMenu();
     jMenuItem2 = new javax.swing.JMenuItem();
     jMenuItem10 = new javax.swing.JMenuItem();
+    jMenuItem12 = new javax.swing.JMenuItem();
+    jMenuItem13 = new javax.swing.JMenuItem();
     jMenuItem3 = new javax.swing.JMenuItem();
 
     setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
@@ -868,6 +870,24 @@ public void makeDataDir(){
     });
     jMenu3.add(jMenuItem10);
 
+    jMenuItem12.setText(bundle.getString("WSN.jMenuItem12.text")); 
+    jMenuItem12.setName("jMenuItem12"); 
+    jMenuItem12.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jMenuItem12ActionPerformed(evt);
+      }
+    });
+    jMenu3.add(jMenuItem12);
+
+    jMenuItem13.setText(bundle.getString("WSN.jMenuItem13.text")); 
+    jMenuItem13.setName("jMenuItem13"); 
+    jMenuItem13.addActionListener(new java.awt.event.ActionListener() {
+      public void actionPerformed(java.awt.event.ActionEvent evt) {
+        jMenuItem13ActionPerformed(evt);
+      }
+    });
+    jMenu3.add(jMenuItem13);
+
     jMenuItem3.setText(bundle.getString("WSN.jMenuItem3.text")); 
     jMenuItem3.setName("jMenuItem3"); 
     jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
@@ -1304,6 +1324,14 @@ private void show16RBActionPerformed(java.awt.event.ActionEvent evt) {
 private void showStrRBActionPerformed(java.awt.event.ActionEvent evt) {
   setHexType();
 }
+
+  private void jMenuItem13ActionPerformed(java.awt.event.ActionEvent evt) {
+openURL.open("https://github.com/h43832/cr-wsn");
+  }
+
+  private void jMenuItem12ActionPerformed(java.awt.event.ActionEvent evt) {
+    openURL.open("http://groups.google.com/group/cr-wsn");
+  }
 public void saveLog(String str1){
   String dDate=formatter2.format(new Date()).substring(0,8);
   if(!dDate.equals(dataDate)) makeDataDir();
@@ -4122,6 +4150,8 @@ private class NodeThread extends Thread{
   private javax.swing.JMenuItem jMenuItem1;
   private javax.swing.JMenuItem jMenuItem10;
   private javax.swing.JMenuItem jMenuItem11;
+  private javax.swing.JMenuItem jMenuItem12;
+  private javax.swing.JMenuItem jMenuItem13;
   private javax.swing.JMenuItem jMenuItem2;
   private javax.swing.JMenuItem jMenuItem3;
   private javax.swing.JMenuItem jMenuItem4;
