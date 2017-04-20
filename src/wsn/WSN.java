@@ -17,8 +17,8 @@ import java.nio.*;
 import java.util.regex.Pattern;
 import y.ylib.ylib;
 public class WSN extends javax.swing.JFrame implements GAction{
-  public static String version="2.17.0010";
-  public String newversion=version,versionDate="2017-03-28 08:00:00",gpw="nullgpw";
+  public static String version="2.17.0011";
+  public String newversion=version,versionDate="2017-04-20 13:00:00",gpw="nullgpw";
   public Weber w;
   public Net gs;
   ResourceBundle bundle2;
@@ -246,7 +246,7 @@ private void readProperties(){
 
     if(props.getProperty("socket_port_open")==null)  props.setProperty("socket_port_open", "");
 
-    if(props.getProperty("socket_port_default")==null)  props.setProperty("socket_port_default", ",5,60,,,1,,,,");
+    if(props.getProperty("socket_port_default")==null)  props.setProperty("socket_port_default", ",5,60,hi,,1,,,,");
     if(props.getProperty("serial_port_open")==null)  props.setProperty("serial_port_open", "");
 
     if(props.getProperty("serial_port_default")==null)  props.setProperty("serial_port_default", ",115200,8,N,1,1,,,,");
@@ -2607,9 +2607,10 @@ private void readStatus(){
          String conf[]=w.csvLineToArray(props.getProperty("socket_port_default"));
          if(conf.length>1 && conf[1].length()>1 && isNumeric(conf[1])) da[0]=conf[1]; else da[0]="10";
          if(conf.length>2 && conf[2].length()>0 && isNumeric(conf[2])) da[1]=conf[2]; else da[1]="60";
+         if(conf.length>3 && conf[3].length()>0) da[2]=conf[3]; else da[2]="hi";
          if(conf.length>5 && conf[5].length()>0 && isNumeric(conf[5])) da[4]=conf[5]; else da[4]="1";
          if(conf.length>6 && conf[6].length()>0) da[5]=conf[6]; else da[5]="";
-       } else {da[0]="10"; da[1]="60"; da[4]="1"; da[5]="";}
+       } else {da[0]="10"; da[1]="60"; da[2]="hi"; da[4]="1"; da[5]="";}
        if(props.getProperty("serial_port_default")!=null){
          String conf[]=w.csvLineToArray(props.getProperty("serial_port_default"));
          if(conf.length>1 && conf[1].length()>0 && isNumeric(conf[1])) da[10]=conf[1]; else da[10]="115200";
@@ -3928,11 +3929,19 @@ private void setNodeOtherConfig(String originalId,String config){
     }
 }
 
-  public void informVersion(int status,String version){
+  public void informVersion(String apId,int status,String version){
+    if(apId.equals(this.apId)){
     if(status==1 || status==3) {hasNewVersion=true; newversion=version;}
     
 
     updateTitle();
+    } else {
+            Iterator it=myAps.values().iterator();
+             for(;it.hasNext();){
+
+               ((WSNApplication)it.next()).informVersion(apId, status, version);
+           }
+    }
   }
 
 public void setSerialportConfig(String stringx[]){

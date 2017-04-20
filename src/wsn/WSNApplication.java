@@ -9,4 +9,6 @@ public abstract class WSNApplication extends javax.swing.JFrame {
   public abstract boolean runInBackground();
 
   public abstract void onExit(int type);
+
+  public void informVersion(String apId,int status,String version){};
 }
