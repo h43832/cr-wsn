@@ -72,6 +72,10 @@ public class WSNSocketDevice extends javax.swing.JFrame implements Runnable{
     buttonGroup1 = new javax.swing.ButtonGroup();
     buttonGroup2 = new javax.swing.ButtonGroup();
     jPanel1 = new javax.swing.JPanel();
+    jPanel4 = new javax.swing.JPanel();
+    jScrollPane1 = new javax.swing.JScrollPane();
+    jTextPane1 = new javax.swing.JTextPane();
+    jPanel11 = new javax.swing.JPanel();
     jPanel3 = new javax.swing.JPanel();
     jLabel1 = new javax.swing.JLabel();
     showCB = new javax.swing.JCheckBox();
@@ -87,9 +91,9 @@ public class WSNSocketDevice extends javax.swing.JFrame implements Runnable{
     portTF = new javax.swing.JTextField();
     connectBtn = new javax.swing.JButton();
     jButton1 = new javax.swing.JButton();
-    jPanel4 = new javax.swing.JPanel();
-    jScrollPane1 = new javax.swing.JScrollPane();
-    jTextPane1 = new javax.swing.JTextPane();
+    jPanel9 = new javax.swing.JPanel();
+    javaHandlerClassCB = new javax.swing.JCheckBox();
+    javaHandlerClassTF = new javax.swing.JTextField();
     jPanel2 = new javax.swing.JPanel();
     jPanel6 = new javax.swing.JPanel();
     jScrollPane2 = new javax.swing.JScrollPane();
@@ -102,11 +106,8 @@ public class WSNSocketDevice extends javax.swing.JFrame implements Runnable{
     jLabel7 = new javax.swing.JLabel();
     checkSumCB = new javax.swing.JCheckBox();
     jComboBox1 = new javax.swing.JComboBox();
-    jPanel9 = new javax.swing.JPanel();
     javaDataClassCB = new javax.swing.JCheckBox();
     javaDataClassTF = new javax.swing.JTextField();
-    javaHandlerClassCB = new javax.swing.JCheckBox();
-    javaHandlerClassTF = new javax.swing.JTextField();
     jPanel10 = new javax.swing.JPanel();
     continueSendCB = new javax.swing.JCheckBox();
     jLabel3 = new javax.swing.JLabel();
@@ -126,6 +127,17 @@ public class WSNSocketDevice extends javax.swing.JFrame implements Runnable{
     });
 
     jPanel1.setLayout(new java.awt.BorderLayout());
+
+    jPanel4.setLayout(new java.awt.BorderLayout());
+
+    jTextPane1.setFont(jTextPane1.getFont());
+    jScrollPane1.setViewportView(jTextPane1);
+
+    jPanel4.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+    jPanel1.add(jPanel4, java.awt.BorderLayout.CENTER);
+
+    jPanel11.setLayout(new java.awt.GridLayout(2, 0));
 
     jPanel3.setBackground(new java.awt.Color(204, 255, 255));
     jPanel3.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
@@ -200,16 +212,23 @@ public class WSNSocketDevice extends javax.swing.JFrame implements Runnable{
     });
     jPanel3.add(jButton1);
 
-    jPanel1.add(jPanel3, java.awt.BorderLayout.NORTH);
+    jPanel11.add(jPanel3);
 
-    jPanel4.setLayout(new java.awt.BorderLayout());
+    jPanel9.setBackground(new java.awt.Color(204, 255, 255));
+    jPanel9.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-    jTextPane1.setFont(jTextPane1.getFont());
-    jScrollPane1.setViewportView(jTextPane1);
+    javaHandlerClassCB.setText(bundle.getString("WSNSocketDevice.javaHandlerClassCB.text_1")); 
+    javaHandlerClassCB.setOpaque(false);
+    jPanel9.add(javaHandlerClassCB);
 
-    jPanel4.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+    javaHandlerClassTF.setText(bundle.getString("WSNSocketDevice.javaHandlerClassTF.text_1")); 
+    javaHandlerClassTF.setToolTipText(bundle.getString("WSNSocketDevice.javaHandlerClassTF.toolTipText")); 
+    javaHandlerClassTF.setPreferredSize(new java.awt.Dimension(200, 21));
+    jPanel9.add(javaHandlerClassTF);
 
-    jPanel1.add(jPanel4, java.awt.BorderLayout.CENTER);
+    jPanel11.add(jPanel9);
+
+    jPanel1.add(jPanel11, java.awt.BorderLayout.PAGE_START);
 
     getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -226,7 +245,7 @@ public class WSNSocketDevice extends javax.swing.JFrame implements Runnable{
 
     jPanel2.add(jPanel6, java.awt.BorderLayout.CENTER);
 
-    jPanel8.setLayout(new java.awt.GridLayout(3, 1));
+    jPanel8.setLayout(new java.awt.GridLayout(2, 1));
 
     jPanel5.setBackground(new java.awt.Color(0, 0, 204));
     jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
@@ -259,10 +278,6 @@ public class WSNSocketDevice extends javax.swing.JFrame implements Runnable{
     jComboBox1.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "CheckSum", "Modbus CRC", "0x0D" }));
     jPanel5.add(jComboBox1);
 
-    jPanel8.add(jPanel5);
-
-    jPanel9.setBackground(new java.awt.Color(0, 0, 204));
-
     javaDataClassCB.setBackground(new java.awt.Color(0, 0, 204));
     javaDataClassCB.setForeground(new java.awt.Color(255, 255, 255));
     javaDataClassCB.setText(bundle.getString("WSNSocketDevice.javaDataClassCB.text_1")); 
@@ -271,24 +286,14 @@ public class WSNSocketDevice extends javax.swing.JFrame implements Runnable{
         javaDataClassCBActionPerformed(evt);
       }
     });
-    jPanel9.add(javaDataClassCB);
+    jPanel5.add(javaDataClassCB);
 
     javaDataClassTF.setText(bundle.getString("WSNSocketDevice.javaDataClassTF.text_1")); 
     javaDataClassTF.setToolTipText(bundle.getString("WSNSocketDevice.javaDataClassTF.toolTipText")); 
     javaDataClassTF.setPreferredSize(new java.awt.Dimension(200, 21));
-    jPanel9.add(javaDataClassTF);
+    jPanel5.add(javaDataClassTF);
 
-    javaHandlerClassCB.setForeground(new java.awt.Color(255, 255, 255));
-    javaHandlerClassCB.setText(bundle.getString("WSNSocketDevice.javaHandlerClassCB.text_1")); 
-    javaHandlerClassCB.setOpaque(false);
-    jPanel9.add(javaHandlerClassCB);
-
-    javaHandlerClassTF.setText(bundle.getString("WSNSocketDevice.javaHandlerClassTF.text_1")); 
-    javaHandlerClassTF.setToolTipText(bundle.getString("WSNSocketDevice.javaHandlerClassTF.toolTipText")); 
-    javaHandlerClassTF.setPreferredSize(new java.awt.Dimension(200, 21));
-    jPanel9.add(javaHandlerClassTF);
-
-    jPanel8.add(jPanel9);
+    jPanel8.add(jPanel5);
 
     jPanel10.setBackground(new java.awt.Color(0, 0, 204));
     jPanel10.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.RIGHT));
@@ -1032,6 +1037,7 @@ private void javaDataClassCBActionPerformed(java.awt.event.ActionEvent evt) {
   private javax.swing.JLabel jLabel7;
   private javax.swing.JPanel jPanel1;
   private javax.swing.JPanel jPanel10;
+  private javax.swing.JPanel jPanel11;
   private javax.swing.JPanel jPanel2;
   private javax.swing.JPanel jPanel3;
   private javax.swing.JPanel jPanel4;

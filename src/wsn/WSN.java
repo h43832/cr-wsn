@@ -17,8 +17,8 @@ import java.nio.*;
 import java.util.regex.Pattern;
 import y.ylib.ylib;
 public class WSN extends javax.swing.JFrame implements GAction{
-  public static String version="2.17.0011";
-  public String newversion=version,versionDate="2017-04-20 13:00:00",gpw="nullgpw";
+  public static String version="2.17.0014";
+  public String newversion=version,versionDate="2017-06-29 13:00:00",gpw="nullgpw";
   public Weber w;
   public Net gs;
   ResourceBundle bundle2;
@@ -49,14 +49,14 @@ public class WSN extends javax.swing.JFrame implements GAction{
           lastId1="",lastId2="",lastId1_1="",lastId1_2="",lastId2_1="",lastId2_2="",currentViewDSrc="",
           nodesFile="apps"+File.separator+"cr-wsn"+File.separator+"nodesfile1.txt",lastUpper="",statuses[]=new String[10];
 
-  public DefaultListModel listModel1=new DefaultListModel(),listModel2=new DefaultListModel();
+  public DefaultListModel receiveListModel=new DefaultListModel(),sendListModel=new DefaultListModel();
   boolean begin=true,lastIsData=false,beginToReceive=false,gIsFinal=false,isSleep=false,chkVersionOK=false;
   public SimpleDateFormat formatter = new SimpleDateFormat ("yyyy-MM-dd HH:mm:ss"),formatter2=new SimpleDateFormat("yyyyMMddHHmmss"),
             formatter3=new SimpleDateFormat("HH:mm:ss");
   public String lastDataFid="",lastDataType="",lastDataPortN="",lastDataConnectionId="",allNodesName="????",allItemsName="????",myNodeName="??v";
   String propsFile="apps"+File.separator+"cr-wsn"+File.separator+"wsn_properties.txt",apId="1007";
   public String currentViewStatus1[]=null,currentViewStatus2[]=null,dataDir="",dataDate="";
-  Color serialColor=Color.RED,socketColor=Color.BLUE,sysColor=new Color(0x4B,0x00,0x82);
+  public Color serialColor=Color.RED,socketColor=Color.BLUE,sysColor=new Color(0x4B,0x00,0x82);
   public int showIndex=7,showType=2,maxMainLogLength=100000,maxDSrcLogLength=10000;
 
     Properties props=new Properties();
@@ -92,10 +92,10 @@ public static boolean isNumeric3(String str){
     public WSN() {
         initComponents();
 
-        jList1.setPrototypeCellValue("256.256.256.256-100 yyy.yyy");
-        jList2.setPrototypeCellValue("256.256.256.256-100 xxx.xxx");
-        jList1.setFixedCellHeight(18);
-        jList2.setFixedCellHeight(18);
+        receiveList.setPrototypeCellValue("256.256.256.256-100 yyy.yyy");
+        sendList.setPrototypeCellValue("256.256.256.256-100 xxx.xxx");
+        receiveList.setFixedCellHeight(18);
+        sendList.setFixedCellHeight(18);
         if(!new File("log").exists()) new File("log").mkdirs();
         bundle2 = java.util.ResourceBundle.getBundle("wsn/Bundle"); 
         allNodesName=bundle2.getString("WSN.xy.msg7");
@@ -118,7 +118,7 @@ public static boolean isNumeric3(String str){
         Image iconImage=new ImageIcon(getClass().getClassLoader().getResource("crtc_logo_t.gif")).getImage();
         setIconImage(iconImage);
 
-        jTextPane1.setText(bundle2.getString("WSN.xy.welcome")+"\r\n");
+        receiveTP.setText(bundle2.getString("WSN.xy.welcome")+"\r\n");
         beginToReceive=true;
         fileThread = new WSNFileThread(this);
         fileThread.start();
@@ -130,13 +130,13 @@ public static boolean isNumeric3(String str){
         wsnNManager.listModel3.removeAllElements();
         String tmpName=makeListItem(allNodesName,"0");
         nameIdMap.put(tmpName,"0");
-        listModel1.addElement(tmpName);
-        listModel2.addElement(tmpName);
+        receiveListModel.addElement(tmpName);
+        sendListModel.addElement(tmpName);
         wsnNManager.listModel3.addElement(tmpName);
         tmpName=makeListItem(myNodeName,"temp");
         nameIdMap.put(tmpName,"temp");
-        listModel1.addElement(tmpName);
-        listModel2.addElement(tmpName);
+        receiveListModel.addElement(tmpName);
+        sendListModel.addElement(tmpName);
         wsnNManager.listModel3.addElement(tmpName);
     }
 public TreeMap getSerialPorts(){
@@ -159,11 +159,11 @@ public void processData(String originalId,String stringx[]){
               dataSrc=(originalId.equals(w.getGNS(1))? "":fid+":")+portName+((portName.indexOf("COM")!=-1 || portName.indexOf("device")!=-1)? "":"-"+connectionId);
 
       byte[] b0={};
-      if(beginToReceive && jList1.getSelectedValue()!=null && jComboBox1.getSelectedItem()!=null && jComboBox3.getSelectedItem()!=null && !dataType.equals("3")){
-       if(getItemId((String)jList1.getSelectedValue()).equals("0") || originalId.equals(getItemId((String)jList1.getSelectedValue()))){
+      if(showCB.isSelected()){
+      if(beginToReceive && receiveList.getSelectedValue()!=null && jComboBox1.getSelectedItem()!=null && jComboBox3.getSelectedItem()!=null && !dataType.equals("3")){
+       if(getItemId((String)receiveList.getSelectedValue()).equals("0") || originalId.equals(getItemId((String)receiveList.getSelectedValue()))){
          if(((String)jComboBox1.getSelectedItem()).equals(allItemsName) || portName.equals((String)jComboBox1.getSelectedItem())){
            if(portName.toUpperCase().indexOf("COM")==0 || ((String)jComboBox3.getSelectedItem()).equals(allItemsName) || connectionId.equals((String)jComboBox3.getSelectedItem())){
-            if(showCB.isSelected()){
             if(show16RB.isSelected()){
                shownData=dataHex;
 
@@ -190,22 +190,21 @@ public void processData(String originalId,String stringx[]){
            lastDataConnectionId=stringx[4];
            lastIsData=true;
            if(dSrcRecord.get(dataSrc)!=null){
-             DataRecord dRecord=((DataRecord) dSrcRecord.get(dataSrc));
+             WSNDataRecord dRecord=((WSNDataRecord) dSrcRecord.get(dataSrc));
              if(dRecord.sb.length()+dataHex.length()> maxDSrcLogLength) dRecord.clear();
              dRecord.sb.append(timeStr).append(" ").append(dRecord.hexType? dataHex:dataStr).append("\r\n");
              dSrcRecord.put(dataSrc,dRecord);
            } else {
-             DataRecord dRecord=new DataRecord(show16RB.isSelected());
+             WSNDataRecord dRecord=new WSNDataRecord(show16RB.isSelected());
              dRecord.sb.append(timeStr).append(" ").append(dRecord.hexType? dataHex:dataStr).append("\r\n");
              dSrcRecord.put(dataSrc,dRecord);
            }
-
-            }
 
            }
          }
        }
       } 
+      }
       Iterator it=myAps.values().iterator();
              for(;it.hasNext();){
 
@@ -304,13 +303,18 @@ public byte[] IntTo2ByteArray( int data ) {
   return result;
 }
 
-public float [] getFloat(byte[] b,int startInx,int len){
+public float [] getIEEE754Float(byte[] b,int startInx,int len){
   float rtn[]=new float[len/4];
   for(int i=0;i<rtn.length;i++){
     byte b2[]={b[startInx+i*4+2],b[startInx+i*4+3],b[startInx+i*4],b[startInx+i*4+1]};
     rtn[i]=getFloat(b2);
   }
   return rtn;
+}
+
+public float getIEEE754Float(byte[] b){
+  byte b2[]={b[2],b[3],b[0],b[1]};
+  return getFloat(b2);
 }
 
  public float getFloat(byte[] b){
@@ -354,7 +358,7 @@ public float [] getFloat(byte[] b,int startInx,int len){
 
     lastIsData=false;
 
-    DefaultCaret caret = (DefaultCaret)jTextPane1.getCaret();
+    DefaultCaret caret = (DefaultCaret)receiveTP.getCaret();
     caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);
     makeDataDir();
     }
@@ -389,15 +393,15 @@ public void makeDataDir(){
     clearShowBtn = new javax.swing.JButton();
     jPanel5 = new javax.swing.JPanel();
     jScrollPane2 = new javax.swing.JScrollPane();
-    jTextPane1 = new javax.swing.JTextPane(styleDoc);
+    receiveTP = new javax.swing.JTextPane(styleDoc);
     jScrollPane3 = new javax.swing.JScrollPane();
-    jList1 = new javax.swing.JList(listModel1);
+    receiveList = new javax.swing.JList(receiveListModel);
     jPanel2 = new javax.swing.JPanel();
     jPanel6 = new javax.swing.JPanel();
     jScrollPane1 = new javax.swing.JScrollPane();
-    jTextArea1 = new javax.swing.JTextArea();
+    sendTA = new javax.swing.JTextArea();
     jScrollPane4 = new javax.swing.JScrollPane();
-    jList2 = new javax.swing.JList(listModel2);
+    sendList = new javax.swing.JList(sendListModel);
     jPanel7 = new javax.swing.JPanel();
     jPanel4 = new javax.swing.JPanel();
     jLabel2 = new javax.swing.JLabel();
@@ -407,7 +411,7 @@ public void makeDataDir(){
     sendStrRB = new javax.swing.JRadioButton();
     jLabel5 = new javax.swing.JLabel();
     chkSumCB = new javax.swing.JCheckBox();
-    jComboBox5 = new javax.swing.JComboBox();
+    chkSumCBB = new javax.swing.JComboBox();
     jPanel8 = new javax.swing.JPanel();
     continueSendCB = new javax.swing.JCheckBox();
     jLabel3 = new javax.swing.JLabel();
@@ -569,27 +573,27 @@ public void makeDataDir(){
 
     jScrollPane2.setName("jScrollPane2"); 
 
-    jTextPane1.setFont(jTextPane1.getFont());
-    jTextPane1.setMinimumSize(new java.awt.Dimension(26, 23));
-    jTextPane1.setName(""); 
-    jScrollPane2.setViewportView(jTextPane1);
+    receiveTP.setFont(receiveTP.getFont());
+    receiveTP.setMinimumSize(new java.awt.Dimension(26, 23));
+    receiveTP.setName(""); 
+    jScrollPane2.setViewportView(receiveTP);
 
     jPanel5.add(jScrollPane2, java.awt.BorderLayout.CENTER);
 
     jScrollPane3.setName("jScrollPane3"); 
 
-    jList1.setName("jList1"); 
-    jList1.addMouseListener(new java.awt.event.MouseAdapter() {
+    receiveList.setName("receiveList"); 
+    receiveList.addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseClicked(java.awt.event.MouseEvent evt) {
-        jList1MouseClicked(evt);
+        receiveListMouseClicked(evt);
       }
     });
-    jList1.addKeyListener(new java.awt.event.KeyAdapter() {
+    receiveList.addKeyListener(new java.awt.event.KeyAdapter() {
       public void keyReleased(java.awt.event.KeyEvent evt) {
-        jList1KeyReleased(evt);
+        receiveListKeyReleased(evt);
       }
     });
-    jScrollPane3.setViewportView(jList1);
+    jScrollPane3.setViewportView(receiveList);
 
     jPanel5.add(jScrollPane3, java.awt.BorderLayout.WEST);
 
@@ -605,31 +609,31 @@ public void makeDataDir(){
 
     jScrollPane1.setName("jScrollPane1"); 
 
-    jTextArea1.setColumns(20);
-    jTextArea1.setFont(jTextArea1.getFont());
-    jTextArea1.setRows(5);
-    jTextArea1.setName("jTextArea1"); 
-    jScrollPane1.setViewportView(jTextArea1);
+    sendTA.setColumns(20);
+    sendTA.setFont(sendTA.getFont());
+    sendTA.setRows(5);
+    sendTA.setName("sendTA"); 
+    jScrollPane1.setViewportView(sendTA);
 
     jPanel6.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
     jScrollPane4.setName("jScrollPane4"); 
 
-    jList2.setName("jList2"); 
-    jList2.addMouseListener(new java.awt.event.MouseAdapter() {
+    sendList.setName("sendList"); 
+    sendList.addMouseListener(new java.awt.event.MouseAdapter() {
       public void mouseClicked(java.awt.event.MouseEvent evt) {
-        jList2MouseClicked(evt);
+        sendListMouseClicked(evt);
       }
     });
-    jList2.addKeyListener(new java.awt.event.KeyAdapter() {
+    sendList.addKeyListener(new java.awt.event.KeyAdapter() {
       public void keyPressed(java.awt.event.KeyEvent evt) {
-        jList2KeyPressed(evt);
+        sendListKeyPressed(evt);
       }
       public void keyReleased(java.awt.event.KeyEvent evt) {
-        jList2KeyReleased(evt);
+        sendListKeyReleased(evt);
       }
     });
-    jScrollPane4.setViewportView(jList2);
+    jScrollPane4.setViewportView(sendList);
 
     jPanel6.add(jScrollPane4, java.awt.BorderLayout.WEST);
 
@@ -696,9 +700,9 @@ public void makeDataDir(){
     chkSumCB.setName("chkSumCB"); 
     jPanel4.add(chkSumCB);
 
-    jComboBox5.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "CheckSum", "Modbus CRC", "0x0D" }));
-    jComboBox5.setName("jComboBox5"); 
-    jPanel4.add(jComboBox5);
+    chkSumCBB.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "CheckSum", "Modbus CRC", "0x0D" }));
+    chkSumCBB.setName("chkSumCBB"); 
+    jPanel4.add(chkSumCBB);
 
     jPanel7.add(jPanel4);
 
@@ -910,11 +914,17 @@ private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {
 }
 
 private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {
- if(wsnUsage==null) wsnUsage=new WSNUsage(this);
- if(!wsnUsage.isVisible()) wsnUsage.setVisible(true);
- String fn=bundle2.getString("WSN.xy.msg10");
-    fn=w.fileSeparator(fn);
- wsnUsage.setPage(fn);
+   String webAddr=bundle2.getString("WSN.xy.msg10");
+         if(webAddr.indexOf("http")==-1){
+             webAddr=webAddr.substring(5);
+             webAddr=webAddr.replace('/', File.separatorChar);
+             webAddr=(new File(webAddr)).getAbsolutePath();
+             webAddr="file:///"+webAddr.replace(File.separatorChar,'/');
+         }
+
+         openURL.open(webAddr);
+    
+
 }
 
 private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {
@@ -949,64 +959,64 @@ private void jMenuItem5ActionPerformed(java.awt.event.ActionEvent evt) {
 
 private void jMenuItem6ActionPerformed(java.awt.event.ActionEvent evt) {
     String item="";
-    if(jList1.getSelectedValue()!=null) item=(String)jList1.getSelectedValue();
+    if(receiveList.getSelectedValue()!=null) item=(String)receiveList.getSelectedValue();
     initWSNNManager();
     if(wsnNManager!=null) wsnNManager.setSelectedItem(item);
 }
 
-private void jList1MouseClicked(java.awt.event.MouseEvent evt) {
+private void receiveListMouseClicked(java.awt.event.MouseEvent evt) {
 
   if(evt.getClickCount()==2){
     String item="";
-    if(jList1.getSelectedValue()!=null) item=(String)jList1.getSelectedValue();
+    if(receiveList.getSelectedValue()!=null) item=(String)receiveList.getSelectedValue();
     initWSNNManager();
     if(wsnNManager!=null) wsnNManager.setSelectedItem(item);
 }
     changeListItem1();
 }
 
-private void jList1KeyReleased(java.awt.event.KeyEvent evt) {
+private void receiveListKeyReleased(java.awt.event.KeyEvent evt) {
 if(evt.getKeyCode()==38 || evt.getKeyCode()==40 )  changeListItem1();
 }
 
-private void jList2MouseClicked(java.awt.event.MouseEvent evt) {
+private void sendListMouseClicked(java.awt.event.MouseEvent evt) {
 if(evt.getClickCount()==2){
     String item="";
-    if(jList2.getSelectedValue()!=null) item=(String)jList2.getSelectedValue();
+    if(sendList.getSelectedValue()!=null) item=(String)sendList.getSelectedValue();
     initWSNNManager();
     if(wsnNManager!=null) wsnNManager.setSelectedItem(item);
 }
 changeListItem2();
 }
 
-private void jList2KeyReleased(java.awt.event.KeyEvent evt) {
+private void sendListKeyReleased(java.awt.event.KeyEvent evt) {
 if(evt.getKeyCode()==38 || evt.getKeyCode()==40 )  changeListItem2();
 }
 
-private void jList2KeyPressed(java.awt.event.KeyEvent evt) {
+private void sendListKeyPressed(java.awt.event.KeyEvent evt) {
 
 }
 
 private void clearSendBtnActionPerformed(java.awt.event.ActionEvent evt) {
-  jTextArea1.setText("");
+  sendTA.setText("");
 }
 
 private void clearShowBtnActionPerformed(java.awt.event.ActionEvent evt) {
   if(currentViewDSrc.length()>0) {
     if(dSrcRecord.get(currentViewDSrc)!=null) {
-      DataRecord dRecord=(DataRecord) dSrcRecord.get(currentViewDSrc);
+      WSNDataRecord dRecord=(WSNDataRecord) dSrcRecord.get(currentViewDSrc);
       dRecord.clear();
       dSrcRecord.put(currentViewDSrc, dRecord);
     }
   }
-  else if(saveFileCB.isSelected()) fileThread.setData(0,"0","0", jTextPane1.getText().trim());
+  else if(saveFileCB.isSelected()) fileThread.setData(0,"0","0", receiveTP.getText().trim());
 
   clear();
 }
 void clear(){
    try{
 
-   styleDoc.remove(0, jTextPane1.getDocument().getLength());
+   styleDoc.remove(0, receiveTP.getDocument().getLength());
    begin=true;
  } catch(BadLocationException e){
    e.printStackTrace();
@@ -1014,36 +1024,37 @@ void clear(){
  lastIsData=false;
 }
 private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {
-		String cmd=jTextArea1.getText();
+		String cmd=sendTA.getText();
                 Vector sendId=new Vector();
 		if(cmd.trim().length()<1) {JOptionPane.showMessageDialog(this,bundle2.getString("WSN.xy.msg1")); return;}
                 String interval=sendIntervalTF.getText().trim();
                 if(interval.length()>0 && isNumeric(interval) && Double.parseDouble(interval)>0) {}
                  else {JOptionPane.showMessageDialog(this,bundle2.getString("WSN.xy.msg2")); return;}
-                String id=getItemId((String)jList2.getSelectedValue());
+                if(interval==null || interval.length()<1) interval="3600";
+                String id=getItemId((String)sendList.getSelectedValue());
                 String id2=(String)jComboBox2.getSelectedItem();
                 String id3=(String)jComboBox4.getSelectedItem();
 
                 cmd=w.e642(cmd);
                 if(id!=null && id.equals(allNodesName)){
-                    int count=jList2.getModel().getSize();
+                    int count=sendList.getModel().getSize();
                     for(int i=1;i<count;i++){
-                        sendId.add(getItemId((String)listModel2.getElementAt(i)));
+                        sendId.add(getItemId((String)sendListModel.getElementAt(i)));
                     }
                     Enumeration en=sendId.elements();
                     for(;en.hasMoreElements();){
-                       cmd="performcommand wsn.WSN cmd all all "+send16RB.isSelected()+" "+chkSumCB.isSelected()+" "+continueSendCB.isSelected()+" "+interval+" "+cmd+" "+w.e642((String)jComboBox5.getSelectedItem())+" 0 0 0 0 0"; 
+                       cmd="performcommand wsn.WSN cmd all all "+send16RB.isSelected()+" "+chkSumCB.isSelected()+" "+continueSendCB.isSelected()+" "+interval+" "+cmd+" "+w.e642((String)chkSumCBB.getSelectedItem())+" 0 0 0 0 0"; 
                        w.sendToOne(cmd,(String)en.nextElement());
                     }
                 } else if(id2!=null && id2.equals(allItemsName)){
-                       cmd="performcommand wsn.WSN cmd all all "+send16RB.isSelected()+" "+chkSumCB.isSelected()+" "+continueSendCB.isSelected()+" "+interval+" "+cmd+" "+w.e642((String)jComboBox5.getSelectedItem())+" 0 0 0 0 0"; 
+                       cmd="performcommand wsn.WSN cmd all all "+send16RB.isSelected()+" "+chkSumCB.isSelected()+" "+continueSendCB.isSelected()+" "+interval+" "+cmd+" "+w.e642((String)chkSumCBB.getSelectedItem())+" 0 0 0 0 0"; 
                        w.sendToOne(cmd,id);
                 } else if(id3!=null && id3.equals(allItemsName)){
-                       cmd="performcommand wsn.WSN cmd "+id2+" all "+send16RB.isSelected()+" "+chkSumCB.isSelected()+" "+continueSendCB.isSelected()+" "+interval+" "+cmd+" "+w.e642((String)jComboBox5.getSelectedItem())+" 0 0 0 0 0"; 
+                       cmd="performcommand wsn.WSN cmd "+id2+" all "+send16RB.isSelected()+" "+chkSumCB.isSelected()+" "+continueSendCB.isSelected()+" "+interval+" "+cmd+" "+w.e642((String)chkSumCBB.getSelectedItem())+" 0 0 0 0 0"; 
                        w.sendToOne(cmd,id);
                 } else if(id3!=null){
                    if(id3.length()<1) id3="0";
-   		   cmd="performcommand wsn.WSN cmd "+id2+" "+id3+" "+send16RB.isSelected()+" "+chkSumCB.isSelected()+" "+continueSendCB.isSelected()+" "+interval+" "+cmd+" "+w.e642((String)jComboBox5.getSelectedItem())+" 0 0 0 0 0"; 
+   		   cmd="performcommand wsn.WSN cmd "+id2+" "+id3+" "+send16RB.isSelected()+" "+chkSumCB.isSelected()+" "+continueSendCB.isSelected()+" "+interval+" "+cmd+" "+w.e642((String)chkSumCBB.getSelectedItem())+" 0 0 0 0 0"; 
                     w.sendToOne(cmd,id);
                 } else if(id3==null) {JOptionPane.showMessageDialog(this, bundle2.getString("WSN.xy.msg3")); return;}
                 stopContinueSendBtn.setEnabled(true);
@@ -1052,14 +1063,14 @@ private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {
 private void stopContinueSendBtnActionPerformed(java.awt.event.ActionEvent evt) {
 
 		String cmd="";
-                String id=getItemId((String)jList2.getSelectedValue());
+                String id=getItemId((String)sendList.getSelectedValue());
                 Vector sendId=new Vector();
                 String id2=(String)jComboBox2.getSelectedItem();
                 String id3=(String)jComboBox4.getSelectedItem();
                 if(id.equals(allNodesName)){
-                    int count=jList2.getModel().getSize();
+                    int count=sendList.getModel().getSize();
                     for(int i=1;i<count;i++){
-                        sendId.add(getItemId((String)listModel2.getElementAt(i)));
+                        sendId.add(getItemId((String)sendListModel.getElementAt(i)));
                     }
                     Enumeration en=sendId.elements();
                     for(;en.hasMoreElements();){
@@ -1123,11 +1134,11 @@ private void jComboBox1ItemStateChanged(java.awt.event.ItemEvent evt) {
                 currentViewDSrc=(currentViewId1.equals(w.getGNS(1))? "":getItemIp(currentViewId1)+":")+currentViewId1_1;
                 if(!lastDSrc.equals(currentViewDSrc)){
                   if(lastDSrc.length()==0){
-                    if(saveFileCB.isSelected()) fileThread.setData(0,"0","0", jTextPane1.getText().trim());
+                    if(saveFileCB.isSelected()) fileThread.setData(0,"0","0", receiveTP.getText().trim());
                   }
                   clear();
                 }
-                DataRecord dRecord=(DataRecord)dSrcRecord.get(currentViewDSrc);
+                WSNDataRecord dRecord=(WSNDataRecord)dSrcRecord.get(currentViewDSrc);
                 if(dRecord!=null) textPaneAppend(dRecord.sb.toString());
               }
       }
@@ -1180,6 +1191,15 @@ private void jMenuItem7ActionPerformed(java.awt.event.ActionEvent evt) {
 private void eventBtnActionPerformed(java.awt.event.ActionEvent evt) {
 
   showEventHandler();
+}
+
+public String getPid(Object o,String pw){
+    if(o instanceof WSNApplication && getTmpPw().equals(pw)) return pid;
+    else return "";
+}
+
+private String getTmpPw(){
+    return formatter2.format(new Date()).substring(0,8)+"wsn";
 }
 private void showEventHandler(){
       if(eventHandlers.size()<1) {
@@ -1244,7 +1264,7 @@ private void jMenuItem8ActionPerformed(java.awt.event.ActionEvent evt) {
 
 private void jMenuItem9ActionPerformed(java.awt.event.ActionEvent evt) {
   String file="datalog.txt";
-  String str1=jTextPane1.getText().trim();
+  String str1=receiveTP.getText().trim();
   if(str1.length()<1){JOptionPane.showMessageDialog(this, bundle2.getString("WSN.xy.msg12")); return;}
   JFileChooser chooser = new JFileChooser(file);
   chooser.setDialogTitle(bundle2.getString("WSN.xy.msg13"));
@@ -1299,18 +1319,18 @@ private void jComboBox3ItemStateChanged(java.awt.event.ItemEvent evt) {
                 currentViewDSrc=(currentViewId1.equals(w.getGNS(1))? "":getItemIp(currentViewId1)+":")+currentViewId1_1+"-"+currentViewId1_2;
                 if(!lastDSrc.equals(currentViewDSrc)){
                   if(lastDSrc.length()==0){
-                    if(saveFileCB.isSelected()) fileThread.setData(0,"0","0", jTextPane1.getText().trim());
+                    if(saveFileCB.isSelected()) fileThread.setData(0,"0","0", receiveTP.getText().trim());
                   }
                   clear();
                 }
-                DataRecord dRecord =(DataRecord)dSrcRecord.get(currentViewDSrc);
+                WSNDataRecord dRecord =(WSNDataRecord)dSrcRecord.get(currentViewDSrc);
                 if(dRecord!=null) textPaneAppend(dRecord.sb.toString());
       }
   }
 }
 private void setHexType(){
     if(currentViewDSrc.length()>0){
-    DataRecord dRecord=(DataRecord)dSrcRecord.get(currentViewDSrc);
+    WSNDataRecord dRecord=(WSNDataRecord)dSrcRecord.get(currentViewDSrc);
     if(dRecord!=null) {
       dRecord.hexType=show16RB.isSelected();
       dSrcRecord.put(currentViewDSrc, dRecord);
@@ -1344,7 +1364,7 @@ public void saveLog(String str1){
       }catch(IOException e){e.printStackTrace();}
 }
 private void changeListItem1(){
-  String id=getItemId((String)jList1.getSelectedValue());
+  String id=getItemId((String)receiveList.getSelectedValue());
 
   if(id!=null && id.length()>0){
 
@@ -1395,7 +1415,7 @@ private void changeListItem1(){
   }
 }
 private void changeListItem2(){
-  String id=getItemId((String)jList2.getSelectedValue());
+  String id=getItemId((String)sendList.getSelectedValue());
 
   if(id.length()>1){
 
@@ -1596,14 +1616,14 @@ private void readStatus(){
       showSrcCB.setSelected(true);
       showSysMsgCB.setSelected(true);
       sendStrRB.setSelected(true);
-      jList1.setSelectedIndex(0);
+      receiveList.setSelectedIndex(0);
       jComboBox1.removeAllItems();
       jComboBox1.addItem(allItemsName);
       jComboBox3.removeAllItems();
       jComboBox3.addItem(allItemsName);
       jComboBox1.setSelectedIndex(0);
       jComboBox3.setSelectedIndex(0);
-      jList2.setSelectedIndex(1);
+      sendList.setSelectedIndex(1);
       changeListItem2();
 
        for(int i=0;i<Integer.parseInt(props.getProperty("socketdeviceemulator_quantity"));i++){
@@ -1618,8 +1638,8 @@ private void readStatus(){
        if(props.getProperty("show_msg")!=null && props.getProperty("show_msg").equalsIgnoreCase("Y")) showSysMsgCB.setSelected(true); else showSysMsgCB.setSelected(false);
        if(props.getProperty("send_hex")!=null && props.getProperty("send_hex").equalsIgnoreCase("Y")) send16RB.setSelected(true); else sendStrRB.setSelected(true);
        if(props.getProperty("send_addchecksumbysystem")!=null && props.getProperty("send_addchecksumbysystem").equalsIgnoreCase("Y")) chkSumCB.setSelected(true); else chkSumCB.setSelected(false);
-         props.put("send_addchecksumtype",(String)jComboBox5.getSelectedItem());
-       if(props.getProperty("send_addchecksumtype")!=null) jComboBox5.setSelectedItem(props.getProperty("send_addchecksumtype"));
+         props.put("send_addchecksumtype",(String)chkSumCBB.getSelectedItem());
+       if(props.getProperty("send_addchecksumtype")!=null) chkSumCBB.setSelectedItem(props.getProperty("send_addchecksumtype"));
        if(props.getProperty("send_continuesend")!=null && props.getProperty("send_continuesend").equalsIgnoreCase("Y")) continueSendCB.setSelected(true); else continueSendCB.setSelected(false);
        if(props.getProperty("send_intervaltimesecond")!=null) sendIntervalTF.setText(props.getProperty("send_intervaltimesecond"));
 
@@ -1851,7 +1871,10 @@ private void readStatus(){
 
          return false;
      }
-     WSNSerial serial=new WSNSerial(this,comName,Integer.parseInt(bRate),Integer.parseInt(dataB),parityB,stopB,pid);
+     WSNSerial serial;
+     if(bRate.equalsIgnoreCase("#brate#") || dataB.equalsIgnoreCase("#datab#") || parityB.equalsIgnoreCase("#parityb#") || stopB.equalsIgnoreCase("#stopb#"))
+     serial=new WSNSerial(this,comName,pid);
+     else serial=new WSNSerial(this,comName,Integer.parseInt(bRate),Integer.parseInt(dataB),parityB,stopB,pid);
 
      return true;
    }
@@ -1924,8 +1947,8 @@ private void readStatus(){
               if(tmpName!=null){
               nameIdMap.remove(tmpName);
 
-              listModel1.removeElement(tmpName);
-              listModel2.removeElement(tmpName);
+              receiveListModel.removeElement(tmpName);
+              sendListModel.removeElement(tmpName);
               if(wsnNManager!=null) wsnNManager.listModel3.removeElement(tmpName);
               }
           }
@@ -1948,8 +1971,8 @@ private void readStatus(){
             innerMemberItems.put(originalId,tmItems);
             String tmpName=getListItem(cn.getCGNS(),showIndex);
             nameIdMap.put(tmpName,cn.getCGNS()[0]);
-            if(!listModel1.contains(tmpName)) listModel1.addElement(tmpName);
-            if(!listModel2.contains(tmpName)) listModel2.addElement(tmpName);
+            if(!receiveListModel.contains(tmpName)) receiveListModel.addElement(tmpName);
+            if(!sendListModel.contains(tmpName)) sendListModel.addElement(tmpName);
             if(wsnNManager!=null && !wsnNManager.listModel3.contains(tmpName)) wsnNManager.listModel3.addElement(tmpName);
             else waitAddV.addElement(tmpName);
         } else {tm=(TreeMap)innerMembers.get(originalId); tmItems=(TreeMap)innerMemberItems.get(originalId);}
@@ -1961,8 +1984,8 @@ private void readStatus(){
               tmItems.put(item[0],item[i]+",0,,,"+item[showIndex]+",,,,,,,,,,,,,,,,");
               String tmpName=getListItem(item,showIndex);
               nameIdMap.put(tmpName, item[0]);
-              if(!listModel1.contains(getListItem(item,showIndex))) listModel1.addElement(tmpName);
-              if(!listModel2.contains(getListItem(item,showIndex))) listModel2.addElement(tmpName);
+              if(!receiveListModel.contains(getListItem(item,showIndex))) receiveListModel.addElement(tmpName);
+              if(!sendListModel.contains(getListItem(item,showIndex))) sendListModel.addElement(tmpName);
               if(wsnNManager!=null && !wsnNManager.listModel3.contains(tmpName)) wsnNManager.listModel3.addElement(tmpName);
               else waitAddV.addElement(tmpName);
           }
@@ -1996,8 +2019,8 @@ private void readStatus(){
                 outerMemberItems.put(item[0],item[0]+",0,,,"+item[showIndex]+",,,,,,,,,,,,,,,,");
                 String tmpName=getListItem(item,showIndex);
                 nameIdMap.put(tmpName,item[0]);
-                if(!listModel1.contains(getListItem(item,showIndex))) listModel1.addElement(tmpName);
-                if(!listModel2.contains(getListItem(item,showIndex))) listModel2.addElement(tmpName);
+                if(!receiveListModel.contains(getListItem(item,showIndex))) receiveListModel.addElement(tmpName);
+                if(!sendListModel.contains(getListItem(item,showIndex))) sendListModel.addElement(tmpName);
 
                 if(wsnNManager!=null && !wsnNManager.listModel3.contains(tmpName)) wsnNManager.listModel3.addElement(tmpName);
                 else waitAddV.addElement(tmpName);
@@ -2023,8 +2046,8 @@ private void readStatus(){
               if(tmpName!=null){
               nameIdMap.remove(tmpName);
 
-              listModel1.removeElement(tmpName);
-              listModel2.removeElement(tmpName);
+              receiveListModel.removeElement(tmpName);
+              sendListModel.removeElement(tmpName);
 
               if(wsnNManager!=null) wsnNManager.listModel3.removeElement(tmpName);
               }
@@ -2050,8 +2073,8 @@ private void readStatus(){
             innerMemberItems.put(originalId, tmItems);
             String tmpName=getListItem(cn.getCGNS(),showIndex);
             nameIdMap.put(tmpName, cn.getCGNS()[0]);
-            if(!listModel1.contains(tmpName)) listModel1.addElement(tmpName);
-            if(!listModel2.contains(tmpName)) listModel2.addElement(tmpName);
+            if(!receiveListModel.contains(tmpName)) receiveListModel.addElement(tmpName);
+            if(!sendListModel.contains(tmpName)) sendListModel.addElement(tmpName);
             if(wsnNManager!=null && !wsnNManager.listModel3.contains(tmpName)) wsnNManager.listModel3.addElement(tmpName);
             else waitAddV.addElement(tmpName);
         } else {tm=(TreeMap)innerMembers.get(originalId); tmItems=(TreeMap) innerMemberItems.get(originalId);}
@@ -2063,8 +2086,8 @@ private void readStatus(){
               if(tmpName!=null){
               nameIdMap.remove(tmpName);
 
-              listModel1.removeElement(tmpName);
-              listModel2.removeElement(tmpName);
+              receiveListModel.removeElement(tmpName);
+              sendListModel.removeElement(tmpName);
               if(wsnNManager!=null) wsnNManager.listModel3.removeElement(tmpName);
               }
           }
@@ -2091,8 +2114,8 @@ private void readStatus(){
               if(tmpName!=null){
               nameIdMap.remove(tmpName);
 
-              listModel1.removeElement(tmpName);
-              listModel2.removeElement(tmpName);
+              receiveListModel.removeElement(tmpName);
+              sendListModel.removeElement(tmpName);
               if(wsnNManager!=null) wsnNManager.listModel3.removeElement(tmpName);
               }
           }
@@ -2474,7 +2497,7 @@ private void readStatus(){
     return false;
   }
 
-  public void sortList(JList jList,DefaultListModel listModel){
+  static public void sortList(JList jList,DefaultListModel listModel){
     String selected="";
     if(jList.getSelectedValue()!=null) selected=(String)jList.getSelectedValue();
     String[] strings = new String[listModel.getSize()];
@@ -2495,11 +2518,11 @@ private void readStatus(){
 
   public void textPaneAppend(String temp2,Color col,int fontSize){
 
-     displayV.add(new DisplayData(temp2,col,fontSize));
+     displayV.add(new WSNDisplayData(temp2,col,fontSize));
       Runnable  runnable = new Runnable() {
         public void run(){
-         if(jTextPane1.getText().length()>maxMainLogLength) {
-            if(saveFileCB.isSelected()) fileThread.setData(0,"0","0",  jTextPane1.getText().trim());
+         if(receiveTP.getText().length()>maxMainLogLength) {
+            if(saveFileCB.isSelected()) fileThread.setData(0,"0","0",  receiveTP.getText().trim());
 
              try{
 
@@ -2510,7 +2533,7 @@ private void readStatus(){
               }
             lastIsData=false;
          }
-         DisplayData dData=(DisplayData)displayV.get(0);
+         WSNDisplayData dData=(WSNDisplayData)displayV.get(0);
             try   {   
                 SimpleAttributeSet   attrSet   =   new   SimpleAttributeSet();
                 if(dData.fontColor!=null) StyleConstants.setForeground(attrSet, dData.fontColor);   
@@ -2830,7 +2853,7 @@ public void onExit(int type){
            ap.setVisible(false);
          }
   if(wsnNManager!=null) wsnNManager.setVisible(false);
-  if(saveFileCB.isSelected()) saveLog(jTextPane1.getText().trim());
+  if(saveFileCB.isSelected()) saveLog(receiveTP.getText().trim());
   saveStatus();
 
   if(!props.getProperty("run_my_ap_only").equalsIgnoreCase("Y")) {setProperties(); saveProperties();}
@@ -2880,7 +2903,7 @@ public Properties getProperties(){
   if(showSysMsgCB.isSelected()) props.put("show_msg","Y"); else props.put("show_msg","N");
   if(send16RB.isSelected()) props.put("send_hex","Y"); else props.put("send_hex","N");
   if(chkSumCB.isSelected()) props.put("send_addchecksumbysystem","Y"); else props.put("send_addchecksumbysystem","N");
-  props.put("send_addchecksumtype",(String)jComboBox5.getSelectedItem());
+  props.put("send_addchecksumtype",(String)chkSumCBB.getSelectedItem());
   if(continueSendCB.isSelected()) props.put("send_continuesend","Y"); else props.put("send_continuesend","N");
 
     Vector delV=new Vector();
@@ -3170,8 +3193,8 @@ public void gridChanged(Weber w,Net gs,int from){
                 String tmp[]=w.csvLineToArray((String)tmOut.get(key));
                 String tmpName=getListItem(tmp[0]);
                 nameIdMap.remove(tmpName);
-                listModel1.removeElement(tmpName);
-                listModel2.removeElement(tmpName);
+                receiveListModel.removeElement(tmpName);
+                sendListModel.removeElement(tmpName);
                 if(wsnNManager!=null) wsnNManager.listModel3.removeElement(tmpName);
                 outerMembers.remove(key);
                 inx++;
@@ -3200,8 +3223,8 @@ public void gridChanged(Weber w,Net gs,int from){
               if(!tmIn.containsKey(cns[i].getId())){
                   String tmpName=makeListItem(cns[i].getCGNS(showIndex),cns[i].getId());
                   nameIdMap.put(tmpName, cns[i].getId());
-                  if(!listModel1.contains(makeListItem(cns[i].getCGNS(showIndex),cns[i].getId()))) listModel1.addElement(tmpName);
-                  if(!listModel2.contains(makeListItem(cns[i].getCGNS(showIndex),cns[i].getId()))) listModel2.addElement(tmpName);
+                  if(!receiveListModel.contains(makeListItem(cns[i].getCGNS(showIndex),cns[i].getId()))) receiveListModel.addElement(tmpName);
+                  if(!sendListModel.contains(makeListItem(cns[i].getCGNS(showIndex),cns[i].getId()))) sendListModel.addElement(tmpName);
                   if(wsnNManager!=null && !wsnNManager.listModel3.contains(tmpName)) wsnNManager.listModel3.addElement(tmpName);
                   else waitAddV.addElement(tmpName);
 
@@ -3374,8 +3397,8 @@ public void gridChanged(Weber w,Net gs,int from){
                        String tmp[]=w.csvLineToArray((String)tm2.get((String)it2.next()));
                        String tmpName=getListItem(tmp,showIndex);
                        nameIdMap.remove(tmpName);
-                       listModel1.removeElement(tmpName);
-                       listModel2.removeElement(tmpName);
+                       receiveListModel.removeElement(tmpName);
+                       sendListModel.removeElement(tmpName);
                        if(wsnNManager!=null) wsnNManager.listModel3.removeElement(tmpName);
                        willBeRemoved.add(tmp[0]);
                        inx2++;
@@ -3459,14 +3482,14 @@ public String[] getIdFromIP(String ip){
     String rtn[]={};
     Vector v=new Vector();
     if(ip.equals("0")){
-       int count=listModel1.size();
+       int count=receiveListModel.size();
                     for(int i=1;i<count;i++){
-                        v.add(getItemId((String)listModel1.getElementAt(i)));
+                        v.add(getItemId((String)receiveListModel.getElementAt(i)));
                     }
     }
     else {
-      for(int i=0;i<listModel1.size();i++){
-        String item=(String)listModel1.elementAt(i);
+      for(int i=0;i<receiveListModel.size();i++){
+        String item=(String)receiveListModel.elementAt(i);
         if(item.indexOf(ip)!=-1) v.add(getItemId(item));
       }
      }
@@ -3745,14 +3768,14 @@ public String makeListItem(String name,String id){
     return rtn;
 }
 public String getListItem(String id){
-    for(int i=0;i<listModel1.size();i++){
-       if(getItemId((String)listModel1.get(i)).equals(id)) return (String)listModel1.get(i);
+    for(int i=0;i<receiveListModel.size();i++){
+       if(getItemId((String)receiveListModel.get(i)).equals(id)) return (String)receiveListModel.get(i);
     }
     return null;
 }
 
 public void setBlink(boolean onoff){
-  if(needChk){jTextPane1.setCaretPosition(styleDoc.getLength()); needChk=false;}
+  if(needChk){receiveTP.setCaretPosition(styleDoc.getLength()); needChk=false;}
 }
 
 public void setItemData(String currentInnerMemberId,String currentViewId,String [] currentItemData){
@@ -4008,7 +4031,7 @@ public boolean isSleep(){
 public void killThread(){
 
 }
- byte [] addChksum(byte in[],boolean needCS,String csType){
+ public byte [] addChksum(byte in[],boolean needCS,String csType){
   int cnt=in.length;
   byte [] out=new byte[cnt];
                    if(needCS) {
@@ -4107,34 +4130,12 @@ private class NodeThread extends Thread{
     }
   }
 }
-   public class DisplayData{
-   String data;
-   int fontSize;
-   Color fontColor;
-   public DisplayData(String data,Color fontColor,int fontSize){
-     this.data=data;
-     this.fontColor=fontColor;
-     this.fontSize=fontSize;
-   }
- }
- public class DataRecord{
-   public StringBuffer sb=new StringBuffer();
-   boolean hexType;
-   public DataRecord(boolean hexType){
-     this.hexType=hexType;
-   }
-   public void setHexType(boolean type){
-     this.hexType=type;
-   }
-   public void clear(){
-     sb.delete(0,sb.length());
-   }
- }
 
   private javax.swing.ButtonGroup buttonGroup1;
   private javax.swing.ButtonGroup buttonGroup2;
   private javax.swing.JButton chartBtn;
   private javax.swing.JCheckBox chkSumCB;
+  private javax.swing.JComboBox chkSumCBB;
   private javax.swing.JButton clearSendBtn;
   private javax.swing.JButton clearShowBtn;
   private javax.swing.JCheckBox continueSendCB;
@@ -4144,14 +4145,11 @@ private class NodeThread extends Thread{
   private javax.swing.JComboBox jComboBox2;
   private javax.swing.JComboBox jComboBox3;
   private javax.swing.JComboBox jComboBox4;
-  private javax.swing.JComboBox jComboBox5;
   private javax.swing.JLabel jLabel1;
   private javax.swing.JLabel jLabel2;
   private javax.swing.JLabel jLabel3;
   private javax.swing.JLabel jLabel4;
   private javax.swing.JLabel jLabel5;
-  private javax.swing.JList jList1;
-  private javax.swing.JList jList2;
   private javax.swing.JMenu jMenu1;
   private javax.swing.JMenu jMenu3;
   private javax.swing.JMenu jMenu4;
@@ -4181,14 +4179,16 @@ private class NodeThread extends Thread{
   private javax.swing.JScrollPane jScrollPane2;
   private javax.swing.JScrollPane jScrollPane3;
   private javax.swing.JScrollPane jScrollPane4;
-  private javax.swing.JTextArea jTextArea1;
-  public javax.swing.JTextPane jTextPane1;
   private javax.swing.JButton myApBtn;
+  private javax.swing.JList receiveList;
+  public javax.swing.JTextPane receiveTP;
   private javax.swing.JCheckBox saveFileCB;
   private javax.swing.JRadioButton send16RB;
   private javax.swing.JButton sendBtn;
   private javax.swing.JTextField sendIntervalTF;
+  private javax.swing.JList sendList;
   private javax.swing.JRadioButton sendStrRB;
+  private javax.swing.JTextArea sendTA;
   public javax.swing.JRadioButton show16RB;
   public javax.swing.JCheckBox showCB;
   private javax.swing.JCheckBox showSrcCB;
