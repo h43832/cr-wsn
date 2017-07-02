@@ -177,6 +177,18 @@ void setSerialDefaultUI(){
           else if(serial[3].substring(0,1).equalsIgnoreCase("S")) jComboBox10.setSelectedItem("SPACE");
          jComboBox13.setSelectedItem(serial[4]);
          if(serial[5].equals("1")) jCheckBox2.setSelected(true); else jCheckBox2.setSelected(false);
+
+         if(serialPortCBB.getSelectedItem()==null || ((String)serialPortCBB.getSelectedItem()).trim().length()==0){
+           jComboBox8.setSelectedItem(serial[1]);
+        jComboBox9.setSelectedItem(serial[2]);
+        if(serial[3].substring(0,1).equalsIgnoreCase("N")) jComboBox12.setSelectedItem("NONE");
+          else if(serial[3].substring(0,1).equalsIgnoreCase("O")) jComboBox12.setSelectedItem("ODD");
+          else if(serial[3].substring(0,1).equalsIgnoreCase("E")) jComboBox12.setSelectedItem("EVEN");
+          else if(serial[3].substring(0,1).equalsIgnoreCase("M")) jComboBox12.setSelectedItem("MARK");
+          else if(serial[3].substring(0,1).equalsIgnoreCase("S")) jComboBox12.setSelectedItem("SPACE");
+         jComboBox14.setSelectedItem(serial[4]);
+         if(serial[5].equals("1")) jCheckBox3.setSelected(true); else jCheckBox3.setSelected(false);
+         }
 }
 void setSerialDefaultFromUI(){
       String bRate=(String)jComboBox7.getSelectedItem(),dBit=(String)jComboBox11.getSelectedItem(),
@@ -198,6 +210,12 @@ void setSocketDefaultUI(){
       jTextField5.setText(socks[2]);
       jTextField6.setText(socks[3]);
       if(socks[5].equals("1")) jCheckBox5.setSelected(true); else jCheckBox5.setSelected(false);
+      if(socketPortNameTF.getText().trim().length()<1){
+      jTextField2.setText(socks[1]);
+      jTextField3.setText(socks[2]);
+      jTextField1.setText(socks[3]);
+      if(socks[5].equals("1")) jCheckBox4.setSelected(true); else jCheckBox4.setSelected(false);
+      }
 }
 void setSocketDefaultFromUI(){
     String maxConn=jTextField4.getText(),hbInterval=jTextField5.getText(),hbData="hi",

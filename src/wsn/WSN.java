@@ -17,8 +17,8 @@ import java.nio.*;
 import java.util.regex.Pattern;
 import y.ylib.ylib;
 public class WSN extends javax.swing.JFrame implements GAction{
-  public static String version="2.17.0014";
-  public String newversion=version,versionDate="2017-06-29 13:00:00",gpw="nullgpw";
+  public static String version="2.17.0015";
+  public String newversion=version,versionDate="2017-07-03 08:00:00",gpw="nullgpw";
   public Weber w;
   public Net gs;
   ResourceBundle bundle2;
